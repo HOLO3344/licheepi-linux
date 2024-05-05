@@ -152,6 +152,11 @@
 				pins = "PF0", "PF1", "PF2", "PF3", "PF4", "PF5";
 				function = "mmc0";
 			};
+
+			i2c0_pins: i2c0 {
+				pins = "PE11", "PE12";  /* PE11: SCK, PE12: SDA */
+				function = "i2c0";
+			};
 		};
 
 		timer@1c20c00 {
@@ -221,6 +226,21 @@
 			resets = <&ccu RST_BUS_UART2>;
 			status = "disabled";
 		};
+
+		i2c0: i2c@1c27000 {
+			compatible = "allwinner,sun6i-a31-i2c";
+			reg = <0x01C27000 0x400>;
+			interrupts = <7>;
+			clocks = <&ccu CLK_BUS_I2C0>;
+			resets = <&ccu RST_BUS_I2C0>;
+			clock-frequency = <100000>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&i2c0_pins>;
+			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
 		fe0: display-frontend@1e00000 {
 			compatible = "allwinner,suniv-f1c100s-display-frontend";
 			reg = <0x01e00000 0x20000>;

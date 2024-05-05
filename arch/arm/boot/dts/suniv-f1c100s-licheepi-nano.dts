@@ -79,3 +79,17 @@
 	pinctrl-0 = <&uart0_pe_pins>;
 	status = "okay";
 };
+
+&i2c0 {
+	status = "disabled";
+
+	ssd1306: oled@3c {
+		compatible = "solomon,ssd1306fb-i2c";
+		reg = <0x3c>;
+		solomon,width = <128>;
+		solomon,height = <64>;
+		solomon,page-offset = <0>;
+		solomon,com-lrremap;
+		solomon,com-invdir;
+	};
+};
