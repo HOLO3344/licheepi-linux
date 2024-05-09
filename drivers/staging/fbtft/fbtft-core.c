@@ -24,6 +24,7 @@
 #include <linux/platform_device.h>
 #include <linux/spinlock.h>
 #include <linux/of.h>
+#include <linux/of_gpio.h>
 #include <video/mipi_display.h>
 
 #include "fbtft.h"
@@ -77,19 +78,29 @@ static int fbtft_request_one_gpio(struct fbtft_par *par,
 {
 	struct device *dev = par->info->device;
 	struct device_node *node = dev->of_node;
-	int ret = 0;
+	int gpio, flags, ret = 0;
+	enum of_gpio_flags of_flags;
 
 	if (of_find_property(node, name, NULL)) {
-		*gpiop = devm_gpiod_get_index(dev, dev->driver->name, index,
-					      GPIOD_OUT_HIGH);
-		if (IS_ERR(*gpiop)) {
-			ret = PTR_ERR(*gpiop);
-			dev_err(dev,
-				"Failed to request %s GPIO:%d\n", name, ret);
+		gpio = of_get_named_gpio_flags(node, name, index, &of_flags);
+		if (gpio == -ENOENT)
+			return 0;
+		if (gpio == -EPROBE_DEFER)
+			return gpio;
+		if (gpio < 0) {
+			dev_err(dev, "failed to get '%s' from DT\n", name);
+			return gpio;
+		}
+		//active low translates to initially low
+		flags = (of_flags & OF_GPIO_ACTIVE_LOW) ? GPIOF_OUT_INIT_LOW : GPIOF_OUT_INIT_HIGH;
+		ret = devm_gpio_request_one(dev, gpio, flags, dev->driver->name);
+		if (ret) {
+			dev_err(dev, "gpio_request_one('%s'=%d) failed with %d\n",  name, gpio, ret);
 			return ret;
 		}
-		fbtft_par_dbg(DEBUG_REQUEST_GPIOS, par, "%s: '%s' GPIO\n",
-			      __func__, name);
+
+		*gpiop = gpio_to_desc(gpio);
+		fbtft_par_dbg(DEBUG_REQUEST_GPIOS, par, "%s: '%s' = GPIO%d\n", __func__, name, gpio);
 	}
 
 	return ret;

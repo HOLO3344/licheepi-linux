@@ -93,3 +93,25 @@
 		solomon,com-invdir;
 	};
 };
+
+&spi1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&spi1_pins_a>;
+	status = "okay";
+	spi-max-frequency = <50000000>;
+
+	ssd1306_spi: oled@0 {
+		compatible = "solomon,ssd1306";
+		reg = <0>;
+		buswidth = <8>;
+		reset-gpios = <&pio 4 3 GPIO_ACTIVE_HIGH>; /* PE3 */
+		dc-gpios = <&pio 4 4 GPIO_ACTIVE_LOW>;  /* PE4 */
+		spi-max-frequency = <50000000>;
+		solomon,com-lrremap;
+		solomon,com-invdir;
+		solomon,com-offset = <32>;
+		spi-cpol;
+		spi-cpha;
+		debug = <1>;
+	};
+};
